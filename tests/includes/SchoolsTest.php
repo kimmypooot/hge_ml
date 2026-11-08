@@ -283,7 +283,7 @@ class SchoolsTest extends TestCase
              VALUES ({$school['id']}, '2025', 'a.pdf', 'ABC_2025_1.pdf', '/x/a.pdf', 10, SHA2('a', 256), 1, 1)"
         );
 
-        $result = remove_school($pdo, $school['id'], 1, 'secret123');
+        $result = remove_school($pdo, $school['id'], 1);
 
         $this->assertSame('error', $result['status']);
         $count = (int) $pdo->query("SELECT COUNT(*) FROM schools WHERE id = {$school['id']}")->fetchColumn();
@@ -304,7 +304,7 @@ class SchoolsTest extends TestCase
              VALUES (1, {$school['id']}, 'Juan Dela Cruz', 'CUM LAUDE', '2025-06-15', 2025)"
         );
 
-        $result = remove_school($pdo, $school['id'], 1, 'secret123');
+        $result = remove_school($pdo, $school['id'], 1);
 
         $this->assertSame('error', $result['status']);
     }
@@ -315,7 +315,7 @@ class SchoolsTest extends TestCase
         $pdo->exec("INSERT INTO users (name, username, email, password, role) VALUES ('Admin', 'admin', 'a@a.com', '" . password_hash('secret123', PASSWORD_DEFAULT) . "', 'administrator')");
         $school = create_school($pdo, 'ABC University', '123 Main St', '');
 
-        $result = remove_school($pdo, $school['id'], 1, 'secret123');
+        $result = remove_school($pdo, $school['id'], 1);
 
         $this->assertSame('success', $result['status']);
         $this->assertSame('ABC UNIVERSITY', $result['school_name']);
@@ -323,25 +323,12 @@ class SchoolsTest extends TestCase
         $this->assertSame(0, $count);
     }
 
-    public function testRemoveSchoolRejectsWrongPassword(): void
-    {
-        $pdo = TestDb::pdo();
-        $pdo->exec("INSERT INTO users (name, username, email, password, role) VALUES ('Admin', 'admin', 'a@a.com', '" . password_hash('secret123', PASSWORD_DEFAULT) . "', 'administrator')");
-        $school = create_school($pdo, 'ABC University', '123 Main St', '');
-
-        $result = remove_school($pdo, $school['id'], 1, 'wrong-password');
-
-        $this->assertSame('error', $result['status']);
-        $count = (int) $pdo->query("SELECT COUNT(*) FROM schools WHERE id = {$school['id']}")->fetchColumn();
-        $this->assertSame(1, $count);
-    }
-
     public function testRemoveSchoolRejectsNonexistentSchool(): void
     {
         $pdo = TestDb::pdo();
         $pdo->exec("INSERT INTO users (name, username, email, password, role) VALUES ('Admin', 'admin', 'a@a.com', '" . password_hash('secret123', PASSWORD_DEFAULT) . "', 'administrator')");
 
-        $result = remove_school($pdo, 999, 1, 'secret123');
+        $result = remove_school($pdo, 999, 1);
 
         $this->assertSame('error', $result['status']);
     }

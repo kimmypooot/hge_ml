@@ -14,35 +14,23 @@ function create_user(PDO $pdo, array $data): array
     $name = trim((string) ($data['name'] ?? ''));
     $username = trim((string) ($data['username'] ?? ''));
     $email = trim((string) ($data['email'] ?? ''));
-    $password = (string) ($data['password'] ?? '');
-    $role = (string) ($data['role'] ?? 'user');
 
-    if ($name === '' || $username === '' || $email === '' || $password === '') {
+    if ($name === '' || $username === '' || $email === '') {
         return ['status' => 'error', 'message' => 'ALL FIELDS ARE REQUIRED.'];
-    }
-
-    if (mb_strlen($password) < 8) {
-        return ['status' => 'error', 'message' => 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.'];
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return ['status' => 'error', 'message' => 'PLEASE ENTER A VALID EMAIL ADDRESS.'];
     }
 
-    if (!in_array($role, ['administrator', 'user'], true)) {
-        return ['status' => 'error', 'message' => 'INVALID ROLE.'];
-    }
-
     try {
         $stmt = $pdo->prepare(
-            'INSERT INTO users (name, username, email, password, role) VALUES (:name, :username, :email, :password, :role)'
+            'INSERT INTO users (name, username, email, password, role) VALUES (:name, :username, :email, NULL, "user")'
         );
         $stmt->execute([
             'name' => $name,
             'username' => $username,
             'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-            'role' => $role,
         ]);
     } catch (\PDOException $e) {
         if ($e->getCode() === '23000') {
@@ -52,18 +40,6 @@ function create_user(PDO $pdo, array $data): array
     }
 
     return ['status' => 'success', 'message' => 'USER CREATED SUCCESSFULLY.', 'id' => (int) $pdo->lastInsertId()];
-}
-
-function update_user_role(PDO $pdo, int $id, string $role): array
-{
-    if (!in_array($role, ['administrator', 'user'], true)) {
-        return ['status' => 'error', 'message' => 'INVALID ROLE.'];
-    }
-
-    $stmt = $pdo->prepare('UPDATE users SET role = :role WHERE id = :id');
-    $stmt->execute(['role' => $role, 'id' => $id]);
-
-    return ['status' => 'success', 'message' => 'ROLE UPDATED.'];
 }
 
 function set_user_status(PDO $pdo, int $id, string $status): array
@@ -78,18 +54,10 @@ function set_user_status(PDO $pdo, int $id, string $status): array
     return ['status' => 'success', 'message' => 'STATUS UPDATED.'];
 }
 
-function remove_user(PDO $pdo, int $id, int $requestingUserId, string $password): array
+function remove_user(PDO $pdo, int $id, int $requestingUserId): array
 {
     if ($id === $requestingUserId) {
         return ['status' => 'error', 'message' => 'YOU CANNOT REMOVE YOUR OWN ACCOUNT.'];
-    }
-
-    $stmt = $pdo->prepare('SELECT password FROM users WHERE id = :id');
-    $stmt->execute(['id' => $requestingUserId]);
-    $hash = $stmt->fetchColumn();
-
-    if ($hash === false || !password_verify($password, $hash)) {
-        return ['status' => 'error', 'message' => 'INCORRECT PASSWORD.'];
     }
 
     $targetStmt = $pdo->prepare('SELECT name, role FROM users WHERE id = :id');
@@ -152,16 +120,4 @@ function remove_user(PDO $pdo, int $id, int $requestingUserId, string $password)
     }
 
     return ['status' => 'success', 'message' => 'USER REMOVED.', 'name' => $target['name']];
-}
-
-function reset_user_password(PDO $pdo, int $id, string $newPassword): array
-{
-    if (mb_strlen($newPassword) < 8) {
-        return ['status' => 'error', 'message' => 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.'];
-    }
-
-    $stmt = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id');
-    $stmt->execute(['password' => password_hash($newPassword, PASSWORD_DEFAULT), 'id' => $id]);
-
-    return ['status' => 'success', 'message' => 'PASSWORD RESET SUCCESSFULLY.'];
 }

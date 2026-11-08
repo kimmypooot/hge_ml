@@ -3,6 +3,9 @@ module.exports = {
   content: ['./**/*.php', './assets/js/**/*.js'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+      },
       colors: {
         surface: {
           // 950 is the page/body canvas (main content only - the sidebar is pinned to

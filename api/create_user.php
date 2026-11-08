@@ -23,8 +23,6 @@ try {
         'name' => $_POST['name'] ?? '',
         'username' => $username,
         'email' => $_POST['email'] ?? '',
-        'password' => $_POST['password'] ?? '',
-        'role' => $_POST['role'] ?? 'user',
     ]);
 
     if ($result['status'] === 'success') {

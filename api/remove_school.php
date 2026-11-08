@@ -16,7 +16,6 @@ if (!csrf_verify($_POST['csrf_token'] ?? null)) {
 }
 
 $schoolId = (int) ($_POST['school_id'] ?? 0);
-$password = (string) ($_POST['password'] ?? '');
 $currentUser = current_user();
 
 if ($schoolId <= 0) {
@@ -26,7 +25,7 @@ if ($schoolId <= 0) {
 
 try {
     $pdo = get_pdo();
-    $result = remove_school($pdo, $schoolId, (int) ($currentUser['id'] ?? 0), $password);
+    $result = remove_school($pdo, $schoolId, (int) ($currentUser['id'] ?? 0));
 
     if ($result['status'] === 'success') {
         try {

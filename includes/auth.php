@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/imis_sso.php';
+
 function csrf_token(): string
 {
     ensure_session();
@@ -37,34 +39,12 @@ function fetch_current_role_and_status(PDO $pdo, int $userId): ?array
     return $row === false ? null : $row;
 }
 
-function attempt_login(PDO $pdo, string $username, string $password): ?array
-{
-    $stmt = $pdo->prepare(
-        'SELECT id, name, username, email, password, role, status FROM users WHERE username = :username LIMIT 1'
-    );
-    $stmt->execute(['username' => $username]);
-    $user = $stmt->fetch();
-
-    // A fixed, pre-generated bcrypt hash with no matching plaintext password.
-    // Used only to keep password_verify()'s timing identical whether or not
-    // the username exists, closing a username-enumeration side channel.
-    // NOTE: this hash's cost factor (10) currently matches PASSWORD_DEFAULT's
-    // cost on this PHP build, which is why timing parity holds. If PHP's
-    // default algorithm/cost ever changes, this literal must be regenerated
-    // to match, or the timing side-channel silently reopens.
-    $dummyHash = '$2y$10$237rIx3i.u4rgcupmeT9IeWgfVojp/ALex2FJywvBWhCDVYo0GCo.';
-    $hashToVerify = ($user && $user['status'] === 'active') ? $user['password'] : $dummyHash;
-    $passwordValid = password_verify($password, $hashToVerify);
-
-    if (!$user || $user['status'] !== 'active' || !$passwordValid) {
-        return null;
-    }
-
-    unset($user['password']);
-    return $user;
-}
-
-function login_user(array $user): void
+/**
+ * Starts the session of a signed-in person. $imisSidHash is the hash of the sid IMIS gave
+ * this sign-in (see imis_session_open()); require_login() ends the session once IMIS
+ * reports the person signed out and that row is gone.
+ */
+function login_user(array $user, ?string $imisSidHash = null): void
 {
     ensure_session();
     session_regenerate_id(true);
@@ -76,6 +56,10 @@ function login_user(array $user): void
         'role' => $user['role'],
     ];
     $_SESSION['last_activity'] = time();
+
+    if ($imisSidHash !== null) {
+        $_SESSION['imis_sid_hash'] = $imisSidHash;
+    }
 }
 
 function logout_user(): void
@@ -107,6 +91,12 @@ function require_login(): void
     $fresh = fetch_current_role_and_status(get_pdo(), (int) $user['id']);
 
     if ($fresh === null || $fresh['status'] !== 'active') {
+        logout_user();
+        redirect(APP_BASE_URL . '/login.php');
+    }
+
+    // Signed out of IMIS (or the sign-in expired there): IMIS told sso_logout.php to drop the row.
+    if (isset($_SESSION['imis_sid_hash']) && !imis_session_alive(get_pdo(), (string) $_SESSION['imis_sid_hash'])) {
         logout_user();
         redirect(APP_BASE_URL . '/login.php');
     }

@@ -156,7 +156,7 @@ class RecycleBinItemsTest extends TestCase
     {
         $pdo = TestDb::pdo();
 
-        $result = remove_school($pdo, 1, 1, 'admin-pass');
+        $result = remove_school($pdo, 1, 1);
 
         $this->assertSame('success', $result['status']);
         $this->assertSame(0, (int) $pdo->query('SELECT COUNT(*) FROM schools')->fetchColumn());
@@ -170,7 +170,7 @@ class RecycleBinItemsTest extends TestCase
     public function testASchoolIsNotRestoredWhenTheSameNameAndCampusWasAddedAgain(): void
     {
         $pdo = TestDb::pdo();
-        remove_school($pdo, 1, 1, 'admin-pass');
+        remove_school($pdo, 1, 1);
         $pdo->exec("INSERT INTO schools (school_name, campus) VALUES ('ABC UNIVERSITY', 'MAIN')");
 
         $result = restore_recycle_item($pdo, (int) $this->binRows()[0]['id'], 1);
@@ -184,10 +184,10 @@ class RecycleBinItemsTest extends TestCase
     public function testRemovingAUserBinsItAndRestoreReattachesTheActivityLog(): void
     {
         $pdo = TestDb::pdo();
-        $created = create_user($pdo, ['name' => 'Ana', 'username' => 'ana', 'email' => 'ana@a.com', 'password' => 'secret123']);
+        $created = create_user($pdo, ['name' => 'Ana', 'username' => 'ana', 'email' => 'ana@a.com']);
         $pdo->exec("INSERT INTO activity_log (user_id, action, details) VALUES ({$created['id']}, 'login', 'x'), ({$created['id']}, 'logout', 'y')");
 
-        $result = remove_user($pdo, $created['id'], 1, 'admin-pass');
+        $result = remove_user($pdo, $created['id'], 1);
 
         $this->assertSame('success', $result['status']);
         $this->assertSame(0, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'ana'")->fetchColumn());
@@ -198,15 +198,15 @@ class RecycleBinItemsTest extends TestCase
         $this->assertTrue(restore_recycle_item($pdo, (int) $row['id'], 1)['ok']);
         $this->assertSame('ana', $pdo->query("SELECT username FROM users WHERE id = {$created['id']}")->fetchColumn());
         $this->assertSame(2, (int) $pdo->query("SELECT COUNT(*) FROM activity_log WHERE user_id = {$created['id']}")->fetchColumn(), 'their log entries point to them again');
-        $this->assertTrue(password_verify('secret123', $pdo->query("SELECT password FROM users WHERE id = {$created['id']}")->fetchColumn()), 'same password');
+        $this->assertSame('ana@a.com', $pdo->query("SELECT email FROM users WHERE id = {$created['id']}")->fetchColumn(), 'same account');
     }
 
     public function testAUserIsNotRestoredWhenTheUsernameIsTakenAgain(): void
     {
         $pdo = TestDb::pdo();
-        $created = create_user($pdo, ['name' => 'Ana', 'username' => 'ana', 'email' => 'ana@a.com', 'password' => 'secret123']);
-        remove_user($pdo, $created['id'], 1, 'admin-pass');
-        create_user($pdo, ['name' => 'Another Ana', 'username' => 'ana', 'email' => 'ana2@a.com', 'password' => 'secret123']);
+        $created = create_user($pdo, ['name' => 'Ana', 'username' => 'ana', 'email' => 'ana@a.com']);
+        remove_user($pdo, $created['id'], 1);
+        create_user($pdo, ['name' => 'Another Ana', 'username' => 'ana', 'email' => 'ana2@a.com']);
 
         $result = restore_recycle_item($pdo, (int) $this->binRows()[0]['id'], 1);
 
@@ -267,7 +267,7 @@ class RecycleBinItemsTest extends TestCase
         $pdo->exec("INSERT INTO schools (school_name, campus) VALUES ('EMPTY COLLEGE', '')");
         $pdo->exec('DROP TABLE recycle_bin_items');
 
-        $school = remove_school($pdo, 2, 1, 'admin-pass');
+        $school = remove_school($pdo, 2, 1);
         $upload = delete_upload($pdo, $uploadId, 1);
 
         $this->assertSame('error', $school['status']);

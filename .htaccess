@@ -1,0 +1,5 @@
+# IMIS calls POST /sso/logout when someone signs out of IMIS (docs/sso-logout.md in IMIS).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^sso/logout/?$ sso_logout.php [L]
+</IfModule>

@@ -42,7 +42,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     </span>
                     <h2 class="text-base font-bold text-csc-navy-600 dark:text-white">DATABASE BACKUP</h2>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-5 flex-1">DOWNLOAD A FULL COPY OF THE DATABASE AS A .SQL FILE. YOU MUST CONFIRM YOUR USERNAME AND PASSWORD BEFORE THE FILE IS GENERATED.</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-5 flex-1">DOWNLOAD A FULL COPY OF THE DATABASE AS A .SQL FILE. THE DOWNLOAD IS RECORDED IN THE ACTIVITY LOG.</p>
                 <div>
                     <button type="button" id="create-db-backup-btn" class="inline-flex items-center gap-1.5 rounded-xl border border-gray-300 dark:border-white/15 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-medium px-4 py-2.5 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -58,7 +58,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     </span>
                     <h2 class="text-base font-bold text-csc-navy-600 dark:text-white">AI EXTRACTION SETTINGS</h2>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-5 flex-1">VIEW OR CHANGE THE API KEYS USED FOR AI EXTRACTION OF UPLOADED LISTS (GEMINI OR CLAUDE), INCLUDING THE FALLBACK KEYS. YOU MUST CONFIRM YOUR USERNAME AND PASSWORD FIRST.</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-5 flex-1">VIEW OR CHANGE THE API KEYS USED FOR AI EXTRACTION OF UPLOADED LISTS (GEMINI OR CLAUDE), INCLUDING THE FALLBACK KEYS. CHANGES ARE RECORDED IN THE ACTIVITY LOG.</p>
                 <?php foreach ($aiKeySlots as $aiIndex => $aiSlotStatus) : ?>
                     <?php if ($aiSlotStatus['configured'] && in_array($aiSlotStatus['expiry_state'], ['expired', 'soon'], true)) : ?>
                         <p class="mb-3 rounded-lg px-3 py-2 text-sm font-semibold <?= $aiSlotStatus['expiry_state'] === 'expired' ? 'bg-red-500/10 text-red-700 dark:text-red-400' : 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' ?>">

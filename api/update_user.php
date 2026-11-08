@@ -23,16 +23,9 @@ if ($userId <= 0) {
     exit;
 }
 
-$role = isset($_POST['role']) && $_POST['role'] !== '' ? (string) $_POST['role'] : null;
 $status = isset($_POST['status']) && $_POST['status'] !== '' ? (string) $_POST['status'] : null;
-$newPassword = isset($_POST['new_password']) && $_POST['new_password'] !== '' ? (string) $_POST['new_password'] : null;
 
 $isSelf = $currentUser !== null && (int) $currentUser['id'] === $userId;
-
-if ($isSelf && $role !== null && $role !== 'administrator') {
-    echo json_encode(['status' => 'error', 'message' => 'YOU CANNOT CHANGE YOUR OWN ROLE.']);
-    exit;
-}
 
 if ($isSelf && $status === 'disabled') {
     echo json_encode(['status' => 'error', 'message' => 'YOU CANNOT DISABLE YOUR OWN ACCOUNT.']);
@@ -52,16 +45,6 @@ try {
     $pdo->beginTransaction();
     $details = [];
 
-    if ($role !== null) {
-        $result = update_user_role($pdo, $userId, $role);
-        if ($result['status'] !== 'success') {
-            $pdo->rollBack();
-            echo json_encode($result);
-            exit;
-        }
-        $details[] = 'role=' . $role;
-    }
-
     if ($status !== null) {
         $result = set_user_status($pdo, $userId, $status);
         if ($result['status'] !== 'success') {
@@ -70,16 +53,6 @@ try {
             exit;
         }
         $details[] = 'status=' . $status;
-    }
-
-    if ($newPassword !== null) {
-        $result = reset_user_password($pdo, $userId, $newPassword);
-        if ($result['status'] !== 'success') {
-            $pdo->rollBack();
-            echo json_encode($result);
-            exit;
-        }
-        $details[] = 'password_reset';
     }
 
     if (empty($details)) {

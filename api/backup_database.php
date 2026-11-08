@@ -13,21 +13,12 @@ if (!csrf_verify($_POST['csrf_token'] ?? null)) {
     exit;
 }
 
-$username = trim((string) ($_POST['username'] ?? ''));
-$password = (string) ($_POST['password'] ?? '');
-
 $pdo = get_pdo();
 
-// Step-up re-authentication: a valid session + CSRF token is not enough
-// for a full database export. The submitted credentials must belong to
-// an active administrator account, verified fresh here (not just trusted
-// from the session), before any dump is produced.
-$verifiedUser = attempt_login($pdo, $username, $password);
-if ($verifiedUser === null || $verifiedUser['role'] !== 'administrator') {
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'INVALID ADMINISTRATOR USERNAME OR PASSWORD.']);
-    exit;
-}
+// Credentials live in IMIS, so there is no password to re-type here. require_role()
+// above re-reads the signed-in administrator's role and status from the database on
+// every request; the export is recorded in the activity log below.
+$verifiedUser = current_user();
 
 $mysqldumpPath = getenv('MYSQLDUMP_PATH') ?: 'C:\xampp\mysql\bin\mysqldump.exe';
 
