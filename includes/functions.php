@@ -298,24 +298,6 @@ function get_upload_activity_by_month(PDO $pdo, int $months = 6): array
     return $series;
 }
 
-function create_or_update_admin(PDO $pdo, string $username, string $email, string $password): void
-{
-    $stmt = $pdo->prepare(
-        'INSERT INTO users (name, username, email, password, role, status)
-         VALUES (:name, :username, :email, :password, :role, :status)
-         ON DUPLICATE KEY UPDATE password = VALUES(password), role = VALUES(role), status = VALUES(status)'
-    );
-
-    $stmt->execute([
-        'name' => 'System Administrator',
-        'username' => $username,
-        'email' => $email,
-        'password' => password_hash($password, PASSWORD_DEFAULT),
-        'role' => 'administrator',
-        'status' => 'active',
-    ]);
-}
-
 function sidebar_nav_class(string $currentPage, string $navPage): string
 {
     // The sidebar itself is CSC navy in light mode and dark surface in dark mode (see

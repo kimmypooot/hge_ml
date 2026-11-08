@@ -37,7 +37,7 @@ $sections = [
             'When you are finished, click [[LOGOUT]] at the bottom of the menu.',
         ],
         'tips' => [
-            'Forgot your password? Click [[Forgot password?]] on the sign-in page and ask your system administrator to reset it.',
+            'You sign in through IMIS, so HGE has no password of its own. To get in, open HGE from the IMIS portal. Roles are given in IMIS.',
             'There are two kinds of accounts. An ADMINISTRATOR can use every page. A USER can use the dashboard, look up records and record applications.',
         ],
         'security' => [
@@ -219,7 +219,7 @@ $sections = [
         'id' => 'settings',
         'title' => 'Settings: managing the system',
         'admin' => true,
-        'intro' => 'These tools are under [[SETTINGS]] in the menu. Actions that cannot easily be undone ask for your password first.',
+        'intro' => 'These tools are under [[SETTINGS]] in the menu. Actions that cannot easily be undone are recorded in the activity log.',
         'parts' => [
             [
                 'title' => 'School management',
@@ -263,7 +263,7 @@ $sections = [
                 'steps' => [
                     'Click [[ADMIN]]. [[CREATE DB BACKUP]] downloads a full copy of the database as a .sql file.',
                     '[[AI EXTRACTION SETTINGS]] lets you view or change the five API keys used for AI reading. For each key choose the service it belongs to, Gemini or Claude, and paste the key (leave a key blank to keep the current one). You can also enter the date each key expires: a key past its date is skipped, and the Admin page warns you a week before. Keys connected to Claude are tried first, then the Gemini ones, each group in key order: when one cannot read a list, for example because its quota or credit is used up or it does not answer in time, the next one takes over.',
-                    'Both ask you to type your username and password again before they continue.',
+                    'Both are recorded in the activity log.',
                 ],
             ],
         ],
@@ -353,7 +353,7 @@ $helpFigures = [
     'settings#2' => [['duplicates', 'The Duplicate records page with groups of records that share a name', 'Records with the same name are grouped. The copy marked Keep stays; tick the extra copies to move them to the Recycle bin.']],
     'settings#3' => [['recycle-bin', 'The Recycle bin page listing removed items', 'Everything removed from the system waits here until you restore it or delete it permanently.']],
     'settings#4' => [['activity-log', 'The Activity log page', 'Who did what, with filters for user, action and dates.']],
-    'settings#5' => [['admin-tools', 'The top of the Admin page with the database backup and AI settings cards', 'The database backup and the AI extraction settings. Both ask for your username and password again.']],
+    'settings#5' => [['admin-tools', 'The top of the Admin page with the database backup and AI settings cards', 'The database backup and the AI extraction settings. Both are recorded in the activity log.']],
 ];
 
 /**

@@ -204,16 +204,8 @@ function set_school_status(PDO $pdo, int $id, string $status): array
     return ['status' => 'success', 'message' => 'STATUS UPDATED.'];
 }
 
-function remove_school(PDO $pdo, int $id, int $requestingUserId, string $password): array
+function remove_school(PDO $pdo, int $id, int $requestingUserId): array
 {
-    $stmt = $pdo->prepare('SELECT password FROM users WHERE id = :id');
-    $stmt->execute(['id' => $requestingUserId]);
-    $hash = $stmt->fetchColumn();
-
-    if ($hash === false || !password_verify($password, $hash)) {
-        return ['status' => 'error', 'message' => 'INCORRECT PASSWORD.'];
-    }
-
     $existsStmt = $pdo->prepare('SELECT school_name FROM schools WHERE id = :id');
     $existsStmt->execute(['id' => $id]);
     $schoolName = $existsStmt->fetchColumn();

@@ -25,34 +25,15 @@ class AuthLoginTest extends TestCase
         );
     }
 
-    public function testAttemptLoginSucceedsWithCorrectCredentials(): void
+    /** @return array{id: int, name: string, username: string, role: string} */
+    private function adminRow(): array
     {
-        $user = attempt_login(TestDb::pdo(), 'admin', 'secret123');
-
-        $this->assertNotNull($user);
-        $this->assertSame('admin', $user['username']);
-        $this->assertSame('administrator', $user['role']);
-        $this->assertArrayNotHasKey('password', $user);
-    }
-
-    public function testAttemptLoginFailsWithWrongPassword(): void
-    {
-        $this->assertNull(attempt_login(TestDb::pdo(), 'admin', 'wrong-password'));
-    }
-
-    public function testAttemptLoginFailsForUnknownUsername(): void
-    {
-        $this->assertNull(attempt_login(TestDb::pdo(), 'nobody', 'secret123'));
-    }
-
-    public function testAttemptLoginFailsForDisabledAccount(): void
-    {
-        $this->assertNull(attempt_login(TestDb::pdo(), 'disableduser', 'secret123'));
+        return TestDb::pdo()->query("SELECT id, name, username, role FROM users WHERE username = 'admin'")->fetch();
     }
 
     public function testLoginUserThenCurrentUserReturnsSessionData(): void
     {
-        $user = attempt_login(TestDb::pdo(), 'admin', 'secret123');
+        $user = $this->adminRow();
         login_user($user);
 
         $current = current_user();
@@ -62,7 +43,7 @@ class AuthLoginTest extends TestCase
 
     public function testLogoutUserClearsCurrentUser(): void
     {
-        $user = attempt_login(TestDb::pdo(), 'admin', 'secret123');
+        $user = $this->adminRow();
         login_user($user);
         logout_user();
 
@@ -72,7 +53,7 @@ class AuthLoginTest extends TestCase
     public function testLoginUserRotatesCsrfToken(): void
     {
         $oldToken = csrf_token();
-        $user = attempt_login(TestDb::pdo(), 'admin', 'secret123');
+        $user = $this->adminRow();
         login_user($user);
 
         $newToken = csrf_token();

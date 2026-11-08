@@ -224,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var bodyHtml =
             '<div class="space-y-4">' +
             '<p class="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300">REMOVE <span class="font-medium text-gray-900 dark:text-white">' + escapeHtml(displayName) + '</span>? IT MOVES TO THE RECYCLE BIN, WHERE IT CAN BE RESTORED.</p>' +
-            modalField({ id: 'modal-remove-password', label: 'ENTER YOUR PASSWORD TO CONFIRM', required: true, type: 'password', icon: 'lock' }) +
             '</div>';
 
         showModal({
@@ -244,11 +243,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             return;
                         }
                         submitting = true;
-                        var password = document.getElementById('modal-remove-password').value;
                         postJson(config.apiBase + '/api/remove_school.php', {
                             csrf_token: config.csrfToken,
                             school_id: target.schoolId,
-                            password: password,
                         })
                             .then(function (data) {
                                 if (data.status === 'success') {

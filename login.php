@@ -3,6 +3,7 @@
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/imis_sso.php';
 
 if (current_user() !== null) {
     redirect(APP_BASE_URL . '/admin/dashboard.php');
@@ -14,22 +15,7 @@ if (($_GET['timeout'] ?? '') === '1') {
     $error = 'YOUR SESSION EXPIRED DUE TO INACTIVITY. PLEASE LOG IN AGAIN.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!csrf_verify($_POST['csrf_token'] ?? null)) {
-        $error = 'YOUR SESSION EXPIRED. PLEASE TRY AGAIN.';
-    } else {
-        $user = attempt_login(get_pdo(), trim($_POST['username'] ?? ''), (string) ($_POST['password'] ?? ''));
 
-        if ($user === null) {
-            $error = 'INVALID USERNAME OR PASSWORD.';
-        } else {
-            login_user($user);
-            redirect(APP_BASE_URL . '/admin/dashboard.php');
-        }
-    }
-}
-
-$csrfToken = csrf_token();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,50 +76,13 @@ $csrfToken = csrf_token();
                 </div>
             <?php endif; ?>
 
-            <form method="post" class="space-y-5">
-                <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+            <p class="mb-5 text-center text-sm text-gray-600 dark:text-gray-400">SIGN IN WITH YOUR IMIS ACCOUNT. HGE DOES NOT KEEP ITS OWN PASSWORDS.</p>
 
-                <div>
-                    <label class="auth-label" for="username">USERNAME</label>
-                    <div class="relative">
-                        <span class="auth-field-icon">
-                            <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
-                                <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
-                                <path d="M4.5 19.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                            </svg>
-                        </span>
-                        <input class="auth-field" type="text" id="username" name="username" placeholder="Enter your username" required autofocus autocomplete="username">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="auth-label" for="password">PASSWORD</label>
-                    <div class="relative">
-                        <span class="auth-field-icon">
-                            <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
-                                <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                                <path d="M8 10.5V7.8a4 4 0 1 1 8 0v2.7" stroke="currentColor" stroke-width="1.5"/>
-                            </svg>
-                        </span>
-                        <input class="auth-field" type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
-                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-3 flex items-center rounded text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 dark:text-gray-500 dark:hover:text-gray-300" aria-label="Show password" aria-pressed="false">
-                            <svg id="eye-open-icon" viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
-                                <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.5"/>
-                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
-                            </svg>
-                            <svg id="eye-closed-icon" viewBox="0 0 24 24" fill="none" class="hidden h-4 w-4" aria-hidden="true">
-                                <path d="M3 3l18 18M9.9 5.1A10.7 10.7 0 0 1 12 5c6 0 9.5 6.5 9.5 6.5a15.6 15.6 0 0 1-3.3 4.1M6.6 6.6C4 8.4 2.5 11.5 2.5 11.5S6 18 12 18c1 0 1.9-.15 2.8-.4M9.9 14.1a3 3 0 0 0 4.2-4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <button class="auth-btn-primary" type="submit">SIGN IN</button>
-            </form>
-
-            <div class="mt-5 text-center">
-                <button type="button" id="forgot-password-btn" class="auth-link">Forgot password?</button>
-            </div>
+            <?php if (imis_portal_url() !== ''): ?>
+                <a class="auth-btn-primary block text-center" href="<?= e(imis_portal_url()) ?>">OPEN IMIS</a>
+            <?php else: ?>
+                <p class="text-center text-sm text-gray-500 dark:text-gray-400">OPEN HGE FROM THE IMIS PORTAL.</p>
+            <?php endif; ?>
 
             <div class="mt-4 flex justify-center">
                 <button id="theme-toggle" type="button" class="auth-theme-toggle" aria-label="Switch between dark mode and light mode">

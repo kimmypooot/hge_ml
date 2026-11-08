@@ -24,14 +24,12 @@ document.addEventListener('DOMContentLoaded', function () {
             modalField({ id: 'modal-name', label: 'NAME', required: true, icon: 'user' }) +
             modalField({ id: 'modal-username', label: 'USERNAME', required: true, icon: 'user' }) +
             modalField({ id: 'modal-email', label: 'EMAIL', required: true, type: 'email', icon: 'mail' }) +
-            modalField({ id: 'modal-password', label: 'PASSWORD', required: true, type: 'password', icon: 'lock' }) +
-            modalField({ id: 'modal-role', label: 'ROLE', type: 'select', icon: 'tag', optionsHtml: '<option value="user">USER</option><option value="administrator">ADMINISTRATOR</option>' }) +
             '</div>';
 
         showModal({
             icon: modalHeaderIcon('user'),
             title: 'CREATE USER',
-            subtitle: 'Add a new administrator or user account.',
+            subtitle: 'Add an account ahead of time. It is linked to the person’s IMIS account at their first sign-in.',
             bodyHtml: bodyHtml,
             buttons: [
                 { label: 'CANCEL', className: MODAL_BTN.secondary },
@@ -45,8 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             name: document.getElementById('modal-name').value,
                             username: document.getElementById('modal-username').value,
                             email: document.getElementById('modal-email').value,
-                            password: document.getElementById('modal-password').value,
-                            role: document.getElementById('modal-role').value,
                         })
                             .then(function (data) {
                                 if (data.status === 'success') {
@@ -68,11 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function openEditModal(defaults) {
         var isSelf = defaults.isSelf;
-        var roleOptions = ['user', 'administrator'].map(function (opt) {
-            var selected = opt === defaults.role ? ' selected' : '';
-            var disabled = isSelf ? ' disabled' : '';
-            return '<option value="' + opt + '"' + selected + disabled + '>' + opt.toUpperCase() + '</option>';
-        }).join('');
 
         var statusOptionsHtml =
             '<option value="active"' + (defaults.status === 'active' ? ' selected' : '') + '>ACTIVE</option>' +
@@ -82,20 +73,15 @@ document.addEventListener('DOMContentLoaded', function () {
             '<div class="space-y-4">' +
             modalField({ id: 'modal-account', label: 'NAME', type: 'static', value: defaults.name + ' (' + defaults.username + ')' }) +
             modalField({
-                id: 'modal-role', label: 'ROLE', type: 'select', icon: 'tag', optionsHtml: roleOptions,
-                attrs: isSelf ? ' disabled' : '', note: isSelf ? 'YOU CANNOT CHANGE YOUR OWN ROLE.' : '',
-            }) +
-            modalField({
                 id: 'modal-status', label: 'STATUS', type: 'select', icon: 'tag', optionsHtml: statusOptionsHtml,
                 attrs: isSelf ? ' disabled' : '', note: isSelf ? 'YOU CANNOT DISABLE YOUR OWN ACCOUNT.' : '',
             }) +
-            modalField({ id: 'modal-new-password', label: 'RESET PASSWORD', optional: true, type: 'password', icon: 'lock', note: 'Leave blank to keep the current password.' }) +
             '</div>';
 
         showModal({
             icon: modalHeaderIcon('user'),
             title: 'EDIT USER',
-            subtitle: 'Update this account’s role, status, or password.',
+            subtitle: 'Enable or disable this account. Roles are given in IMIS.',
             bodyHtml: bodyHtml,
             buttons: [
                 { label: 'CANCEL', className: MODAL_BTN.secondary },
@@ -109,12 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             user_id: defaults.userId,
                         };
                         if (!isSelf) {
-                            payload.role = document.getElementById('modal-role').value;
                             payload.status = document.getElementById('modal-status').value;
-                        }
-                        var newPassword = document.getElementById('modal-new-password').value;
-                        if (newPassword !== '') {
-                            payload.new_password = newPassword;
                         }
 
                         postJson(config.apiBase + '/api/update_user.php', payload)
@@ -141,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var bodyHtml =
             '<div class="space-y-4">' +
             '<p class="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300">REMOVE <span class="font-medium text-gray-900 dark:text-white">' + escapeHtml(target.name) + '</span>? THE ACCOUNT MOVES TO THE RECYCLE BIN, WHERE IT CAN BE RESTORED.</p>' +
-            modalField({ id: 'modal-remove-password', label: 'ENTER YOUR PASSWORD TO CONFIRM', required: true, type: 'password', icon: 'lock' }) +
             '</div>';
 
         showModal({
@@ -161,11 +141,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             return;
                         }
                         submitting = true;
-                        var password = document.getElementById('modal-remove-password').value;
                         postJson(config.apiBase + '/api/remove_user.php', {
                             csrf_token: config.csrfToken,
                             user_id: target.userId,
-                            password: password,
                         })
                             .then(function (data) {
                                 if (data.status === 'success') {
@@ -198,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 userId: btn.dataset.userId,
                 name: btn.dataset.name,
                 username: btn.dataset.username,
-                role: btn.dataset.role,
                 status: btn.dataset.status,
                 isSelf: btn.dataset.isSelf === '1',
             });

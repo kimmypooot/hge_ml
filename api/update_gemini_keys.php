@@ -18,18 +18,11 @@ if (!csrf_verify($_POST['csrf_token'] ?? null)) {
     exit;
 }
 
-$username = trim((string) ($_POST['username'] ?? ''));
-$password = (string) ($_POST['password'] ?? '');
-
 $pdo = get_pdo();
 
-// Step-up re-authentication, the same pattern api/backup_database.php uses:
-// a valid session + CSRF token isn't enough to change a live API credential.
-$verifiedUser = attempt_login($pdo, $username, $password);
-if ($verifiedUser === null || $verifiedUser['role'] !== 'administrator') {
-    echo json_encode(['status' => 'error', 'message' => 'INVALID ADMINISTRATOR USERNAME OR PASSWORD.']);
-    exit;
-}
+// Credentials live in IMIS, so there is no password to re-type here; the change is
+// recorded in the activity log below.
+$verifiedUser = current_user();
 
 // Each of the five slots has a key (blank = keep the current one) and the provider
 // it is connected to (Gemini or Claude).

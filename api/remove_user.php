@@ -16,7 +16,6 @@ if (!csrf_verify($_POST['csrf_token'] ?? null)) {
 }
 
 $userId = (int) ($_POST['user_id'] ?? 0);
-$password = (string) ($_POST['password'] ?? '');
 $currentUser = current_user();
 
 if ($userId <= 0) {
@@ -26,7 +25,7 @@ if ($userId <= 0) {
 
 try {
     $pdo = get_pdo();
-    $result = remove_user($pdo, $userId, (int) ($currentUser['id'] ?? 0), $password);
+    $result = remove_user($pdo, $userId, (int) ($currentUser['id'] ?? 0));
 
     if ($result['status'] === 'success') {
         try {

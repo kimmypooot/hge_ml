@@ -20,15 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function openBackupModal() {
         var submitting = false;
         var bodyHtml =
-            '<div class="space-y-4">' +
-            modalField({ id: 'modal-backup-username', label: 'USERNAME', required: true, icon: 'user' }) +
-            modalField({ id: 'modal-backup-password', label: 'PASSWORD', required: true, type: 'password', icon: 'lock' }) +
-            '</div>';
+            '<p class="text-sm text-gray-600 dark:text-gray-400">THE FILE HOLDS EVERY RECORD IN THE DATABASE. KEEP IT SOMEWHERE SAFE. THIS ACTION IS RECORDED IN THE ACTIVITY LOG.</p>';
 
         showModal({
-            icon: modalHeaderIcon('lock'),
-            title: 'CONFIRM ADMINISTRATOR IDENTITY',
-            subtitle: 'For security, re-enter your credentials to download a full database backup.',
+            icon: modalHeaderIcon('download'),
+            title: 'DOWNLOAD DATABASE BACKUP',
+            subtitle: 'You are signed in through IMIS as an administrator.',
             bodyHtml: bodyHtml,
             buttons: [
                 { label: 'CANCEL', className: MODAL_BTN.secondary },
@@ -44,8 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         var formData = new FormData();
                         formData.set('csrf_token', config.csrfToken);
-                        formData.set('username', document.getElementById('modal-backup-username').value);
-                        formData.set('password', document.getElementById('modal-backup-password').value);
 
                         fetch(config.apiBase + '/api/backup_database.php', { method: 'POST', body: formData })
                             .then(function (response) {
@@ -90,68 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Step 1: a credentials-only prompt, verified server-side before the
-    // actual key-configuration modal ever loads — so a shoulder-surfed or
-    // left-open Users page doesn't expose which AI keys are configured
-    // without first re-authenticating.
-    function openAiSettingsCredentialModal() {
-        var submitting = false;
-        var bodyHtml =
-            '<div class="space-y-4">' +
-            modalField({ id: 'modal-ai-verify-username', label: 'USERNAME', required: true, icon: 'user' }) +
-            modalField({ id: 'modal-ai-verify-password', label: 'PASSWORD', required: true, type: 'password', icon: 'lock' }) +
-            '</div>';
-
-        showModal({
-            icon: modalHeaderIcon('lock'),
-            title: 'CONFIRM ADMINISTRATOR IDENTITY',
-            subtitle: 'For security, re-enter your credentials to view or change the AI extraction API keys.',
-            bodyHtml: bodyHtml,
-            buttons: [
-                { label: 'CANCEL', className: MODAL_BTN.secondary },
-                {
-                    label: 'CONTINUE',
-                    icon: modalButtonIcon('check'),
-                    className: MODAL_BTN.primary,
-                    onClick: function (modalClose) {
-                        if (submitting) {
-                            return;
-                        }
-                        submitting = true;
-
-                        var username = document.getElementById('modal-ai-verify-username').value;
-                        var password = document.getElementById('modal-ai-verify-password').value;
-
-                        postJson(config.apiBase + '/api/verify_administrator.php', {
-                            csrf_token: config.csrfToken,
-                            username: username,
-                            password: password,
-                        })
-                            .then(function (data) {
-                                if (data.status === 'success') {
-                                    modalClose();
-                                    openAiSettingsModal(username, password);
-                                } else {
-                                    submitting = false;
-                                    showToast('error', data.message);
-                                }
-                            })
-                            .catch(function () {
-                                submitting = false;
-                                showToast('error', 'IDENTITY COULD NOT BE VERIFIED. PLEASE TRY AGAIN.');
-                            });
-                    },
-                },
-            ],
-        });
-    }
-
-    // Step 2: the actual key-configuration modal, only reachable after
-    // openAiSettingsCredentialModal() above has verified the admin's
-    // credentials. Those same credentials ride along with the final save so
-    // api/update_gemini_keys.php can independently re-verify them too,
-    // rather than trusting a client-side "already verified" flag.
-    function openAiSettingsModal(verifiedUsername, verifiedPassword) {
+    // The key-configuration modal. The administrator is already signed in through IMIS;
+    // api/update_gemini_keys.php re-checks the role on every save and logs the change.
+    function openAiSettingsModal() {
         var submitting = false;
         var slots = config.aiKeySlots || [];
         var providers = config.aiProviders || { gemini: 'GEMINI', claude: 'CLAUDE' };
@@ -223,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
             icon: modalHeaderIcon('lock'),
             title: 'AI EXTRACTION SETTINGS',
             widthClass: 'max-w-4xl',
-            subtitle: 'Identity confirmed. Leave a key blank to keep its current value.',
+            subtitle: 'Leave a key blank to keep its current value.',
             bodyHtml: bodyHtml,
             buttons: [
                 { label: 'CANCEL', className: MODAL_BTN.secondary },
@@ -239,8 +175,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         postJson(config.apiBase + '/api/update_gemini_keys.php', {
                             csrf_token: config.csrfToken,
-                            username: verifiedUsername,
-                            password: verifiedPassword,
                             gemini_api_key: document.getElementById('modal-ai-key-1').value,
                             gemini_api_key_2: document.getElementById('modal-ai-key-2').value,
                             gemini_api_key_3: document.getElementById('modal-ai-key-3').value,
@@ -284,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var aiSettingsBtn = document.getElementById('configure-ai-settings-btn');
     if (aiSettingsBtn) {
-        aiSettingsBtn.addEventListener('click', openAiSettingsCredentialModal);
+        aiSettingsBtn.addEventListener('click', openAiSettingsModal);
     }
 
     // ---- Bulk update of HGE applications: upload -> preview (nothing saved) -> confirm.
