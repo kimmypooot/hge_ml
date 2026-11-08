@@ -20,6 +20,7 @@ function sso_refuse(string $message): never
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSC-HGE VERIFY — Sign in</title>
+    <?php include __DIR__ . '/includes/font_links.php'; ?>
     <link rel="stylesheet" href="<?= e(asset_url('assets/css/app.css')) ?>">
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 antialiased dark:bg-surface-950 dark:text-white">

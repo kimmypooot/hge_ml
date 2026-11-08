@@ -33,6 +33,7 @@ if (($_GET['timeout'] ?? '') === '1') {
         } catch (e) {}
     })();
     </script>
+    <?php include __DIR__ . '/includes/font_links.php'; ?>
     <link rel="stylesheet" href="<?= e(asset_url('assets/css/app.css')) ?>">
 </head>
 <body class="relative min-h-screen overflow-hidden bg-gray-50 text-gray-900 antialiased dark:bg-surface-950 dark:text-white">

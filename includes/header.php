@@ -14,6 +14,7 @@
         } catch (e) {}
     })();
     </script>
+    <?php include __DIR__ . '/font_links.php'; ?>
     <link rel="stylesheet" href="<?= e(asset_url('assets/css/app.css')) ?>">
 </head>
 <body class="bg-gray-50 dark:bg-surface-950 text-gray-900 dark:text-gray-100">
